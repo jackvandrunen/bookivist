@@ -6,7 +6,7 @@ Painlessly create high quality PDF scans of books with any camera.
 
 ## Operation
 
-Bookivist requires Python 3, OpenCV 3.x, and PIL (Pillow).
+Bookivist requires Python 3, OpenCV 3.x, NumPy, PIL (Pillow), and img2pdf.
 
 A full CLI API is currently in development. For now, operation is simple:
 
