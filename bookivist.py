@@ -11,7 +11,7 @@ Options:
   -h, --help                    Show this message.
   -o <file>, --output <file>    Specify the output file [default: ./output.pdf]
   -q, --quiet                   Suppress stdout.
-  -r <int>, --resolution <int>  Specify the output resolution [default: 300]
+  -r <dpi>, --resolution <dpi>  Specify the output resolution [default: 300]
   -v, --version                 Show version.
 """
 
@@ -117,9 +117,9 @@ def normalize(image, resolution):
     return (normal_w, normal_h), page
 
 
-def save_pdf(imgs, output_file):
+def save_pdf(imgs, output_file, pdf_layout):
     with open(output_file, 'wb') as f:
-        f.write(img2pdf.convert(*imgs))
+        f.write(img2pdf.convert(*imgs, layout_fun=lambda w,h,r: pdf_layout))
 
 
 def mod_glob(path):
@@ -150,7 +150,7 @@ def scan_all(glob_path, output_file, resolution):
         print('Finished scanning {} pages.'.format(i))
         print('Saving to PDF...')
         # Create PDF
-        save_pdf(imgs, output_file)
+        save_pdf(imgs, output_file, (dimensions[0], dimensions[1], dimensions[0], dimensions[1]))
         print('Done.')
 
 
