@@ -12,13 +12,14 @@ Bookivist requires Python 3, OpenCV 3.x, NumPy, PIL (Pillow), and img2pdf:
 $ pip install -r requirements.txt
 ```
 
-A full CLI API is currently in development. For now, operation is simple:
+A full CLI API is currently in development (check `bookivist.py -h` for more
+info). Operation is simple:
 
 ```bash
-$ python bookivist.py 'book/*.jpg'
+$ bookivist.py 'book/*.jpg'
 ```
 
-Where `'book/*.jpg'` is any blob for expansion by the program internally (be
+Where `'book/*.jpg'` is any glob for expansion by the program internally (be
 sure to place it in single quotes so bash does not do the expansion). Photos
 are sorted based on their EXIF timestamp (more flexible options will be
 available soon), cropped and binarized, and then dumped into an output PDF file

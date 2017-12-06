@@ -1,3 +1,22 @@
+#!/usr/bin/env python3
+
+
+"""Bookivist (alpha)
+Copyright (C) 2017 Jacob VanDrunen
+
+Usage:
+  bookivist.py [options] <glob>
+
+Options:
+  -h, --help                    Show this message.
+  -o <file>, --output <file>    Specify the output file [default: ./output.pdf]
+  -q, --quiet                   Suppress stdout.
+  -v, --version                 Show version.
+"""
+
+__version__ = (0,0,0)
+
+
 from contextlib import contextmanager
 import os
 import sys
@@ -115,7 +134,7 @@ def context_dir(dir_path):
     shutil.rmtree(dir_path)
 
 
-def scan_all(glob_path):
+def scan_all(glob_path, output_file):
     print('Scanning...')
     tmp_path = os.path.join('/', 'tmp', str(uuid.uuid1()))
     with context_dir(tmp_path):
@@ -130,9 +149,14 @@ def scan_all(glob_path):
         print('Finished scanning {} pages.'.format(i))
         print('Saving to PDF...')
         # Create PDF
-        save_pdf(imgs, 'output.pdf')
+        save_pdf(imgs, output_file)
         print('Done.')
 
 
 if __name__ == '__main__':
-    scan_all(sys.argv[1])
+    from docopt import docopt
+    args = docopt(__doc__, version='.'.join(map(str, __version__)))
+    if args['--quiet']:
+        from io import StringIO
+        sys.stdout = StringIO()
+    scan_all(args['<glob>'], args['--output'])
