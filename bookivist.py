@@ -11,6 +11,7 @@ Options:
   -h, --help                    Show this message.
   -o <file>, --output <file>    Specify the output file [default: ./output.pdf]
   -q, --quiet                   Suppress stdout.
+  -r <int>, --resolution <int>  Specify the output resolution [default: 300]
   -v, --version                 Show version.
 """
 
@@ -81,13 +82,13 @@ def scan(file_name):
     return scanned
 
 
-def normalize(image):
+def normalize(image, resolution):
     # Fit the image to an 8.5x11 page
     height, width = image.shape
 
     # Portrait
-    normal_w = 2550
-    normal_h = 3300
+    normal_w = int(8.5 * resolution)
+    normal_h = int(11 * resolution)
     # Landscape
     if height < width:
         normal_w, normal_h = normal_h, normal_w
@@ -134,14 +135,14 @@ def context_dir(dir_path):
     shutil.rmtree(dir_path)
 
 
-def scan_all(glob_path, output_file):
+def scan_all(glob_path, output_file, resolution):
     print('Scanning...')
     tmp_path = os.path.join('/', 'tmp', str(uuid.uuid1()))
     with context_dir(tmp_path):
         imgs = []
         for i, input_path in enumerate(mod_glob(glob_path), 1):
             output_path = os.path.join(tmp_path, '{}.png'.format(str(i).zfill(6)))
-            dimensions, img = normalize(scan(input_path))
+            dimensions, img = normalize(scan(input_path), resolution)
             cv2.imwrite(output_path, img)
             imgs.append(output_path)
             if i % 5 == 0:
@@ -159,4 +160,4 @@ if __name__ == '__main__':
     if args['--quiet']:
         from io import StringIO
         sys.stdout = StringIO()
-    scan_all(args['<glob>'], args['--output'])
+    scan_all(args['<glob>'], args['--output'], int(args['--resolution']))
