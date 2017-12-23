@@ -99,6 +99,50 @@ def blockify(image):
     return cv2.dilate(result, kernel, iterations=1)
 
 
+def bounding_rect(contours):
+    min_x = sorted(map(lambda c: cv2.boundingRect(c)[0], contours))[0]
+    min_y = sorted(map(lambda c: cv2.boundingRect(c)[1], contours))[0]
+    max_x = sorted(map(lambda c: cv2.boundingRect(c)[0] + cv2.boundingRect(c)[2], contours))[-1]
+    max_y = sorted(map(lambda c: cv2.boundingRect(c)[1] + cv2.boundingRect(c)[3], contours))[-1]
+    return min_x, min_y, max_x - min_x, max_y - min_y
+
+
+def bounding_area(contours):
+    x, y, w, h = bounding_rect(contours)
+    return w * h
+
+
+def f_score(accepted, image_area, total_filled):
+    r = sum(map(cv2.contourArea, accepted)) / total_filled
+    p = (image_area - bounding_area(accepted)) / image_area
+    return 2.0 * ((p * r) / (p + r))
+
+
+def optimized_crop(edged):
+    image, contours, hierarchy = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    accepted = []
+    f1 = 0.0
+    image_area = np.size(edged)
+    total_filled = sum(map(cv2.contourArea, contours))
+    for contour in sorted(contours, key=cv2.contourArea, reverse=True):
+        accepted.append(contour)
+        if f1 > f_score(accepted, image_area, total_filled):
+            accepted.pop()
+            break
+    return bounding_rect(accepted)  # x, y, w, h
+
+
+def optimized_crop_2(edged):
+    image, contours, hierarchy = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    mean = sum(map(cv2.contourArea, contours)) / len(contours)
+    accepted = []
+    for contour in sorted(contours, key=cv2.contourArea, reverse=True):
+        if cv2.contourArea(contour) < mean:
+            break
+        accepted.append(contour)
+    return bounding_rect(accepted)
+
+
 def scan(file_name):
     img = cv2.imread(file_name)
     height, width, channels = img.shape
