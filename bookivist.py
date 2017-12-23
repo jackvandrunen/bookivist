@@ -59,6 +59,46 @@ def auto_threshold(image, window=63):
     return thresh
 
 
+def row_threshold(image):
+    result = np.zeros(image.shape[0])
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            result[i] += 1.0 if image[i][j] else 0.0
+        result[i] = result[i] / float(image.shape[0])
+    mean = np.mean(result)
+    return np.array(list(map(lambda n: 1 if n > mean else 0, result)))
+
+
+def col_threshold(image):
+    result = np.zeros(image.shape[1])
+    for i in range(image.shape[1]):
+        for j in range(image.shape[0]):
+            result[i] += 1.0 if image[j][i] else 0.0
+        result[i] = result[i] / float(image.shape[0])
+    mean = np.mean(result)
+    return np.array(list(map(lambda n: 1 if n > mean else 0, result)))
+
+
+def reconstruct(rb, cb):
+    cols = len(rb)
+    rows = len(cb)
+    result = np.zeros((cols, rows), np.uint8)
+    for y in range(cols):
+        for x in range(rows):
+            result[y][x] = (rb[y] & cb[x]) * 255
+    return result
+
+
+def blockify(image):
+    edged = auto_canny(image)
+    kernel = np.ones((5,5), np.uint8)
+    dil = cv2.dilate(edged, kernel, iterations=1)
+    rb = row_threshold(dil)
+    cb = col_threshold(dil)
+    result = reconstruct(rb, cb)
+    return cv2.dilate(result, kernel, iterations=1)
+
+
 def scan(file_name):
     img = cv2.imread(file_name)
     height, width, channels = img.shape
